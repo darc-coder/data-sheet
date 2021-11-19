@@ -1,12 +1,14 @@
 let data = {
-    monthlyStatusReport: {
+    "monthlyStatusReport": {
+        primarycolumn: "Full Name",
         columns: ["oct", "nov", "dec"],
         rows: {
             "nitz": ["done", "not done", "not done"],
             "bilz": ["done", "done", "not done"]
         }
     },
-    data1: {
+    "data-1": {
+        primarycolumn: "Full Name",
         columns: ["url fundamentals", "ethics training"],
         rows: {
             "Nitz": ["yes", "no"],
@@ -16,6 +18,6 @@ let data = {
 }
 
 let chartNames = {
-    monthlyStatusReport: "Monthly Status Report",
-    data1: "completed funda and ethics"
+    "monthlyStatusReport": "Monthly Status Report",
+    "data-1": "completed funda and ethics"
 }

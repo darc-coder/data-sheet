@@ -1,8 +1,4 @@
 let data = {
-    chartNames: {
-        monthlyStatusReport: "Monthly Status Report",
-        data1: "completed funda and ethics"
-    },
     monthlyStatusReport: {
         columns: ["oct", "nov", "dec"],
         rows: {
@@ -12,7 +8,7 @@ let data = {
     },
     data1: {
         columns: ["url fundamentals", "ethics training"],
-        rows:{
+        rows: {
             "Nitz": ["yes", "no"],
             "Bitz": ["yes", "yes"]
         }
@@ -20,5 +16,6 @@ let data = {
 }
 
 let chartNames = {
-    
+    monthlyStatusReport: "Monthly Status Report",
+    data1: "completed funda and ethics"
 }

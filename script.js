@@ -1,14 +1,29 @@
+let currentChartName = "default";
+let datatable = document.querySelector('table.data-table');
+let tableheader = document.querySelector('table thead');
+let tablebody = document.querySelector('table tbody');
+let addRowBtn = document.querySelector('.add-row');
+let addColBtn = document.querySelector('.add-column');
+let saveDataBtn = document.querySelector('.save-data');
+let sheetTitle = document.querySelector('.sheet-title');
+let selectChart = document.querySelector('#select-chart');
+
 function addColumn() {
-    console.log('Adding column');
-    [...document.querySelectorAll('table tr')].forEach((row, i) => {
+    let tablerows = document.querySelectorAll('table tr');
+    [...tablerows].forEach((row, i) => {
         const cell = document.createElement(i ? "td" : "th");
-        cell.innerText = "Click to edit C";
+        cell.innerText = "[edit]";
         row.appendChild(cell);
     });
 }
 
-document.querySelector('.add-column').onclick = addColumn
-document.querySelector('.add-row').onclick = addRow
+addRowBtn.onclick = addRow;
+addColBtn.onclick = addColumn;
+saveDataBtn.onclick = saveData;
+
+datatable.oninput = (event) => {
+    console.log("Something changed need to save file");
+}
 
 function getRemoveButton() {
     let button = document.createElement('input');
@@ -24,10 +39,8 @@ function getRemoveButton() {
 
 // now, add a new to the TABLE.
 function addRow() {
-    let table = document.querySelector('table');
 
-    let rowCnt = table.rows.length;   // table row count.
-    let tr = table.insertRow(rowCnt); // the table row.
+    let tr = datatable.insertRow(); // the table row.
 
     let arrHead = document.querySelectorAll('table tr:nth-child(1) th');
 
@@ -44,22 +57,22 @@ function addRow() {
         }
         else {
             // rest column
-            td.innerText = "Click to edit R";
+            td.innerText = "[edit]";
         }
     }
 }
 
 function removeRow(event) {
-    let table = document.querySelector('table');
     // button -> td -> tr.
-    table.deleteRow(event.parentNode.parentNode.rowIndex);
+    datatable.deleteRow(event.parentNode.parentNode.rowIndex);
 }
 
 function Loadtable(chartName) {
+    // updating sheet title
+    sheetTitle.innerText = chartNames[chartName];
+
     let datacols = data[chartName].columns;
     let datarows = data[chartName].rows;
-    let tableheader = document.querySelector('table thead');
-    let tablebody = document.querySelector('table tbody');
 
     tableheader.innerHTML = '';
     tablebody.innerHTML = '';
@@ -100,8 +113,112 @@ function Loadtable(chartName) {
     }
 }
 
-// Call the Load Function
-for (const it in chartNames) {
-    Loadtable(it);
-    break;
+
+// extracting table data and saving
+function saveData() {
+    let tableArr = new Array();
+    let rowArray = new Array();
+
+    // loop through each row of the table.
+    for (row = 0; row < datatable.rows.length; row++) {
+        // loop through each cell in a row.
+        rowArray = [];
+        for (c = 1; c < datatable.rows[row].cells.length; c++) {
+            var element = datatable.rows.item(row).cells[c];
+            rowArray.push(element.textContent);
+        }
+        tableArr.push(rowArray);
+    }
+    console.log(tableArr);
+    updateDataObject(tableArr);
 }
+
+// creating data object from Array
+function updateDataObject(tableArray = [[]]) {
+    let primarycolumn = tableArray[0][0];
+    let columns = tableArray[0].filter((_value, index) => index > 0);
+    let rows = {};
+
+    tableArray.forEach((arr, index) => {
+        if (index > 0) {
+            let columnDataforRow = arr.filter((_value, index) => index > 0);
+            let keyForRowObj = arr[0];
+
+            rows[keyForRowObj] = columnDataforRow;
+        }
+    })
+
+    console.log(primarycolumn, columns);
+    console.log(rows);
+    data[currentChartName].primarycolumn = primarycolumn;
+    data[currentChartName].columns = columns;
+    data[currentChartName].rows = rows;
+}
+
+function prettyPrintArray(json) {
+    if (typeof json === 'string') {
+        json = JSON.parse(json);
+    }
+    output = JSON.stringify(json, function (k, v) {
+        if (v instanceof Array)
+            return JSON.stringify(v);
+        return v;
+    }, 2).replace(/\\/g, '')
+        .replace(/\"\[/g, '[')
+        .replace(/\]\"/g, ']')
+        .replace(/\"\{/g, '{')
+        .replace(/\}\"/g, '}');
+
+    return output;
+}
+
+function createDataTextFile() {
+    // need to create data text file in JS Object format
+    let result = "";
+
+    // replacer function for Array
+    function replacer(key, value) {
+        if (Array.isArray(value))
+            return value;
+        return value;
+    }
+
+
+    result += "let data = ";
+    result += prettyPrintArray(data)
+
+    result += "\n\n";
+
+    result += "let chartNames = ";
+    result += prettyPrintArray(chartNames);
+
+    return result;
+
+    let blob = new Blob([result], { type: "text/plain" });
+    let url = window.URL.createObjectURL(blob);
+    let a = document.createElement("a");
+    a.href = url;
+    a.download = "data.txt";
+    a.click();
+}
+
+function loadChartNames() {
+    for (key in chartNames) {
+        let value = chartNames[key];
+        let newoption = document.createElement("option");
+        newoption.value = key;
+        newoption.innerHTML = value;
+
+        selectChart.append(newoption);
+    }
+    Loadtable(selectChart.value);
+    currentChartName = selectChart.value;
+
+    selectChart.addEventListener("change", () => {
+        console.log("some change", selectChart.value);
+        Loadtable(selectChart.value);
+        currentChartName = selectChart.value;
+    })
+}
+
+loadChartNames();

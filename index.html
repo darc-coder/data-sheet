@@ -13,20 +13,17 @@
 <body>
     <header>
         <div class="top-bar">
-            <div class="sheet-title">
-                monthly title reports
-            </div>
+            <div class="sheet-title">default</div>
         </div>
         <div class="control-bar">
             <div class="selectChart">
-                <select name="abc" title="Select a Chart">
-                    <option value="monthlyStatusReport">monthly Status Report</option>
-                    <option value="Data1">Data1</option>
+                <select name="abc" title="Select a Chart" id="select-chart">
+                    <!-- options Loaded Dynamically -->
                 </select>
             </div>
             <div class="controls">
-                <button>save</button>
-                <button> download data file </button>
+                <button class="save-data">save data</button>
+                <button class="download-data">download data</button>
             </div>
         </div>
     </header>

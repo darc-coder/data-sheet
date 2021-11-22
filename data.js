@@ -4,7 +4,7 @@ let data = {
         columns: ["oct", "nov", "dec"],
         rows: {
             "nitz": ["done", "not done", "not done"],
-            "bilz": ["done", "done", "not done"]
+            "mitz": ["done", "done", "not done"]
         }
     },
     "data-1": {
@@ -12,7 +12,7 @@ let data = {
         columns: ["url fundamentals", "ethics training"],
         rows: {
             "Nitz": ["yes", "no"],
-            "Bitz": ["yes", "yes"]
+            "Kitz": ["yes", "yes"]
         }
     }
 }

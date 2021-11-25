@@ -7,6 +7,16 @@ let addColBtn = document.querySelector('.add-column');
 let saveDataBtn = document.querySelector('.save-data');
 let sheetTitle = document.querySelector('.sheet-title');
 let selectChart = document.querySelector('#select-chart');
+let dialogBox = document.querySelector('.dialog-box');
+let dialogHead = document.querySelector('.dialog .head');
+let dialogText = document.querySelector('.dialog .body-text');
+let dialogSubmit = document.querySelector('.dialog-box .primary');
+let dialogCancel = document.querySelector('.dialog-box .secondary');
+let addChartBtn = document.querySelector('#add-chart');
+let delChartBtn = document.querySelector('#del-chart');
+let dialogValue = document.querySelector('.dialog #dialog-value');
+let delColBtn = document.querySelector('.Del-column');
+let downloadBtn = document.querySelector('.download-data');
 
 function addColumn() {
     let tablerows = document.querySelectorAll('table tr');
@@ -19,17 +29,44 @@ function addColumn() {
 
 addRowBtn.onclick = addRow;
 addColBtn.onclick = addColumn;
-saveDataBtn.onclick = saveData;
+saveDataBtn.onclick = saveData.bind(this, false);
+downloadBtn.onclick = saveData.bind(this, true);
+
+let dataTableChanges = false;
+let dataTableContent = "";
+let dialogBoxName = "";
+
+function unsaveChanges(addListener = true) {
+    if (addListener) {
+        addEventListener("beforeunload", beforeUnloadListener, { capture: true });
+        dataTableChanges = true;
+        saveDataBtn.classList.add('active');
+    }
+    else {
+        removeEventListener("beforeunload", beforeUnloadListener, { capture: true });
+        dataTableChanges = false;
+        saveDataBtn.classList.remove('active');
+    }
+};
+
+const beforeUnloadListener = (event) => {
+    event.preventDefault();
+    return event.returnValue = "Are you sure you want to exit?";
+};
 
 datatable.oninput = (event) => {
-    console.log("Something changed need to save file");
+    if (dataTableContent != datatable.textContent) {
+        unsaveChanges(true);
+    }
+    else {
+        unsaveChanges(false);
+    }
 }
 
 function getRemoveButton() {
-    let button = document.createElement('input');
+    let button = document.createElement('button');
 
-    button.type = 'button';
-    button.value = 'Remove';
+    button.className = 'remove-row';
 
     // add button's 'onclick' event.
     button.setAttribute('onclick', 'removeRow(this)');
@@ -111,11 +148,13 @@ function Loadtable(chartName) {
         })
         tablebody.append(newbodyrow);
     }
+
+    dataTableContent = datatable.textContent;
 }
 
 
 // extracting table data and saving
-function saveData() {
+function saveData(download = false) {
     let tableArr = new Array();
     let rowArray = new Array();
 
@@ -129,8 +168,10 @@ function saveData() {
         }
         tableArr.push(rowArray);
     }
-    console.log(tableArr);
     updateDataObject(tableArr);
+    createDataTextFile(download);
+    unsaveChanges(false);
+    dataTableContent = datatable.textContent;
 }
 
 // creating data object from Array
@@ -148,8 +189,6 @@ function updateDataObject(tableArray = [[]]) {
         }
     })
 
-    console.log(primarycolumn, columns);
-    console.log(rows);
     data[currentChartName].primarycolumn = primarycolumn;
     data[currentChartName].columns = columns;
     data[currentChartName].rows = rows;
@@ -172,7 +211,7 @@ function prettyPrintArray(json) {
     return output;
 }
 
-function createDataTextFile() {
+function createDataTextFile(download = false) {
     // need to create data text file in JS Object format
     let result = "";
 
@@ -192,17 +231,20 @@ function createDataTextFile() {
     result += "let chartNames = ";
     result += prettyPrintArray(chartNames);
 
-    return result;
+    if (download) {
+        let blob = new Blob([result], { type: "text/plain" });
+        let url = window.URL.createObjectURL(blob);
+        let a = document.createElement("a");
+        a.href = url;
+        a.download = "data.txt";
+        a.click();
+    }
 
-    let blob = new Blob([result], { type: "text/plain" });
-    let url = window.URL.createObjectURL(blob);
-    let a = document.createElement("a");
-    a.href = url;
-    a.download = "data.txt";
-    a.click();
+    return result;
 }
 
 function loadChartNames() {
+    selectChart.innerHTML = "";
     for (key in chartNames) {
         let value = chartNames[key];
         let newoption = document.createElement("option");
@@ -214,11 +256,99 @@ function loadChartNames() {
     Loadtable(selectChart.value);
     currentChartName = selectChart.value;
 
+    selectChart.onclick = (event) => {
+        if (dataTableChanges)
+            alert("You should save before changing chart")
+
+        dataTableChanges = false;
+    }
+
     selectChart.addEventListener("change", () => {
-        console.log("some change", selectChart.value);
         Loadtable(selectChart.value);
         currentChartName = selectChart.value;
     })
 }
 
 loadChartNames();
+
+// Handling Dialog Box Stuffs
+dialogBox.addEventListener('click', (ev) => {
+    ev.target.classList.remove('shown');
+}, false);
+
+dialogCancel.onclick = () => {
+    dialogBox.classList.remove('shown');
+}
+
+addChartBtn.onclick = () => {
+    dialogBoxName = "addchart";
+    dialogBox.classList.add('shown');
+    dialogHead.innerText = "Add New Chart";
+    dialogText.innerText = "Enter New Chart Name:";
+}
+
+delColBtn.onclick = () => {
+    dialogBoxName = "delcol";
+    dialogBox.classList.add('shown');
+    dialogHead.innerText = "Delete A Column";
+    dialogText.innerText = "Enter a Column Index (2 - 99):";
+}
+
+delChartBtn.onclick = () => {
+    dialogBoxName = "delchart";
+    dialogBox.classList.add('shown');
+    dialogHead.innerText = "Delete A Chart";
+    dialogText.innerText = "Enter a Chart Index (0 - 99):";
+}
+
+dialogSubmit.onclick = () => {
+
+    if (dialogBoxName == "delcol") {
+        if (/^\d+$/.test(dialogValue.value.trim())) {
+            let index = parseInt(dialogValue.value);
+            if (index > 1) {
+                let tablerows = document.querySelectorAll('table tr');
+                [...tablerows].forEach((row, i) => {
+                    if (row.cells.length >= index)
+                        row.removeChild(row.cells[index]);
+                });
+            }
+        }
+        dialogBox.classList.remove('shown');
+    }
+    else if (dialogBoxName == "addchart") {
+        let newChartName = dialogValue.value.trim();
+        let newChartKey = "data-" + parseInt(Math.random() * 100 + 0);
+        while (chartNames.hasOwnProperty(newChartName)) {
+            newChartKey = "data-" + parseInt(Math.random() * 100 + 0);
+        }
+        chartNames[newChartKey] = newChartName;
+        data[newChartKey] = {
+            primarycolumn: "Full Name", columns: [""], rows: {
+                "": [""]
+            }
+        };
+        dialogBox.classList.remove('shown');
+        loadChartNames();
+        let lastChartOption = selectChart.options.length - 1;
+        selectChart.options[lastChartOption].selected = true;
+        let event = new Event('change');
+        selectChart.dispatchEvent(event);
+    }
+    else if (dialogBoxName == "delchart") {
+        if (/^\d+$/.test(dialogValue.value.trim())) {
+            let index = parseInt(dialogValue.value);
+            if (selectChart.options.length >= index) {
+                let option = selectChart.options[index];
+                delete chartNames[option.value];
+                delete data[option.value];
+                selectChart.removeChild(option);
+                dialogBox.classList.remove('shown');
+                loadChartNames();
+            }
+
+        }
+    }
+}
+
+// End of File.

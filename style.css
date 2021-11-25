@@ -16,9 +16,10 @@ header .top-bar{
 
 .control-bar{
     display: grid;
-    grid-template-columns: auto 400px;
+    grid-template-columns: max-content auto max-content;
     padding: 20px;
     background: #f5f5f5;
+    column-gap: 20px;
 }
 
 .control-bar select{
@@ -41,15 +42,15 @@ header .top-bar{
     place-content: flex-end;
 }
 
-.controls button{
-    height: auto;
+.controls button, .add-chart button{
+    height: 28px;
     width: 200px;
     border: 2px solid #42a5f5;
     background: #fff;
     outline: none;
 }
 
-.controls button:hover, .controls button:active{
+.controls button:hover, .controls button.active, .add-chart button:hover{
     background: #42a5f5;
     color: white;
     cursor: pointer;
@@ -57,6 +58,78 @@ header .top-bar{
 
 .controls button{
     font-size: 1.3rem;
+}
+.dialog-box{
+    display: none;
+}
+.dialog-box.shown{
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    width: 100%;
+    height: 100%;
+    display: grid;
+    place-content: center;
+    background: rgba(255,255,255,0.2);
+    backdrop-filter: blur(4px);
+}
+
+.dialog-box .dialog{
+    display: grid;
+    grid-template-rows: auto 1fr auto;
+    height: 300px;
+    width: 500px;
+    box-shadow: 0 0 16px 0px rgba(0,0,0,0.2);
+    border-radius: 8px;
+}
+
+.dialog .head, .dialog .foot{
+    font-size: 2rem;
+    min-height: 50px;
+    display: flex;
+    align-items: center;
+    padding-left: 20px;
+    border-bottom: 1px solid #aaa;
+    color: #666;
+}
+.dialog .body{
+    display: grid;
+    place-content: center;
+}
+.dialog .foot{
+    display: flex;
+    justify-content: flex-end;
+    align-items: center;
+    border-bottom: none;
+}
+
+.dialog .body .body-text{
+    font-size: 24px;
+    margin-bottom: 20px;
+    color: #777;
+}
+
+.dialog .body input{
+    width: 400px;
+    font-size: 20px;
+    border: none;
+    outline: none;
+    border-bottom: 2px solid #222;
+}
+
+.dialog .foot button{
+    height: 30px;
+    min-width: 100px;
+    border: 1px;
+    margin-right: 10px;
+    background: #2196f3;
+    color: white;
+    cursor: pointer;
+}
+.foot button.secondary{
+    background: #ff7043;
 }
 
 .container{
@@ -96,19 +169,47 @@ table.data-table{
 }
 
 .data-table th, .data-table td{
-    border: 1px solid #888;
+    border: 1px solid #ccc;
     padding: 4px 8px;
     min-width: 110px;
 }
 
-.add-column, .add-row{
-    box-shadow: 0px 0px 4px 1px rgba(0,0,0,0.4);
+.data-table tr td:first-child{
+    text-align: -webkit-center; 
+    vertical-align: middle;
+}
+.data-table .remove-row{
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 30px;
+    width: 30px;
+    background: #eee;
+    border: none;
+    border-radius: 25px;
+    cursor: pointer;
+}
+
+.data-table .remove-row::after{
+    content: "\2715";
+    color: red;
+    font-size: 16px;
+}
+
+.column-btn{
+    display: grid;
+    grid-template-rows: auto auto;
+    row-gap: 30px;
+}
+.table-btn{
+    box-shadow: 0px 0px 4px 0px #3f51b5;
     padding: 4px 8px;
-    width: 110px;
+    width: 120px;
     text-align: center;
     cursor: pointer;
 }
 
-.add-row{
+.table-btn.add-row{
+    width: 110px;
     margin-left: 20px;
 }
